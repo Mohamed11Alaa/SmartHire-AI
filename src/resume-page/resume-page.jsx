@@ -49,14 +49,14 @@ function ResumePage() {
         </div>
         <div className="job-description-label">
           <label htmlFor="job-description">Job Description</label>
-        <input
-          type="text"
+        <textarea
           className="jobdescription-input"
           placeholder="Write a clear & concise job description with responsibilities & expectations..."
+          rows={6}
           onChange={(e) => {
             setDatalist({ jobdescription: e.target.value });
           }}
-        />
+        ></textarea>
         </div>
     
         

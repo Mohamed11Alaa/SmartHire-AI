@@ -1,5 +1,5 @@
 import GradientText from "../animations/textani";
-import { useState , useEffect } from "react";
+import { useState , useEffect, use } from "react";
 import constants , {
   buildPresenceChecklist, 
    METRIC_CONFIG,
@@ -30,6 +30,20 @@ function ResumePage() {
      jobdescription: "",
     }
   ]);
+
+// checking if ai is ready
+  useEffect(() =>{
+    const checkAiReady = setInterval (() => {
+      if(window.puter?.ai?.chat){
+        setAiReady (true);
+        clearInterval (checkAiReady);
+      }
+    } , 300);
+    return () => clearInterval (checkAiReady);
+  }, []);
+
+
+
   return (
     <div>
       <div className="resume-text">

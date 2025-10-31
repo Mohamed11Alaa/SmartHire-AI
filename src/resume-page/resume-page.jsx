@@ -1,5 +1,9 @@
 import GradientText from "../animations/textani";
-import { useState } from "react";
+import { useState , useEffect } from "react";
+
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjswebworker from "pdfjs-dist/build/pdf.worker.entry";
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjswebworker;
 function ResumePage() {
 
   const [Datalist, setDatalist] = useState([

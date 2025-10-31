@@ -1,10 +1,27 @@
 import GradientText from "../animations/textani";
 import { useState , useEffect } from "react";
-
+import constants , {
+  buildPresenceChecklist, 
+   METRIC_CONFIG,
+} from "./constants.js"
 import * as pdfjsLib from "pdfjs-dist";
-import pdfjswebworker from "pdfjs-dist/build/pdf.worker.entry";
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjswebworker;
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min?url";
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 function ResumePage() {
+
+  //  checking if Ai is ready or not
+  const [aiReady, setAiReady] = useState(false);
+// loading states for the ai
+  const [isLoading, setIsLoading] = useState(false);
+  //the pdf file uploaded by the user
+  const [uploadedFile, setUploadedFile] = useState(null);
+  // analyzed data from the ai
+  const [analysis, setAnalysis] = useState(null);
+  // resume text extracted from the pdf
+  const [resumeText, setResumeText] = useState("");
+  // checklist for presence metrics
+  const [presenceChecklist, setPresenceChecklist] = useState([])
+
 
   const [Datalist, setDatalist] = useState([
     {

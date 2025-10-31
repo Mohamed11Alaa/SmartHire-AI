@@ -1,5 +1,5 @@
 import GradientText from "../animations/textani";
-import { useState , useEffect, use } from "react";
+import { useState , useEffect} from "react";
 import constants , {
   buildPresenceChecklist, 
    METRIC_CONFIG,
@@ -42,6 +42,86 @@ function ResumePage() {
     return () => clearInterval (checkAiReady);
   }, []);
 
+//extracting text from pdf
+const extractTextFromPDF = async (file) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const texts = await Promise.all(
+    Array.from({ length: pdf.numPages }, (_, i) => i + 1).map(async (pageNum) => {
+      const page = await pdf.getPage(pageNum);
+      const content = await page.getTextContent();
+      return content.items.map((item) => item.str).join(" ");
+    })
+  );
+  return texts.join("\n").trim();
+};
+
+
+const parseJSNONResponse = (reply) => {
+  try {
+    const match = reply.match(/\{[\s\S]*\}/);
+    const parsed = match ? JSON.parse(match[0]) : {};
+    if (!parsed.overallScore && !parsed.error) {
+      throw new Error("Invalid AI response ");
+    }
+    return parsed;
+
+  } catch (err) {
+    throw new Error("Failed to parse AI response " + err.message);
+  }
+};
+
+const analyzeResume = async (text) => {
+  const prompt = constants.ANALYZE_RESUME_PROMPT.replace("{DOCUMENT_TEXT}", text);
+  const response = await window.puter.ai.chat([
+    { role: "system", content: "You are an expert assistant that analyzes resumes based on job descriptions." },
+    { role: "user", content: prompt },
+  ],{
+    model : "gpt-4o",
+  }
+);
+const result = parseJSNONResponse(
+  typeof response === "string" ? response : response.message?.content || ""
+);
+if (result.error) {
+  throw new Error(result.error);
+}
+return result;
+};
+
+
+const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file || file.type !== "application/pdf") {
+    return alert("Please upload a valid PDF file.");
+  }
+  setUploadedFile(file);
+  setIsLoading(true);
+  setAnalysis (null);
+  setResumeText("");
+  setPresenceChecklist([]);
+
+
+  try {
+
+    const text = await extractTextFromPDF(file);
+    setResumeText(text);
+
+    setPresenceChecklist(buildPresenceChecklist (text));
+    setAnalysis(await analyzeResume (text));
+
+
+  }
+  
+  catch (err) {
+    alert ("Error analyzing resume: " + err.message);
+    reset();
+  }
+  
+  finally {
+    setIsLoading (false);
+  }
+};
 
 
   return (
